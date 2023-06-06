@@ -28,7 +28,7 @@ func EPCtoUPC(epc string) (int64, error) {
 		return result.UPC, err
 	}
 
-	return 0, errors.New("this decoder is not yet developed.")
+	return 0, errors.New("this decoder is not yet developed")
 }
 
 func hexToBigInt(hexStr string) (*big.Int, bool) {

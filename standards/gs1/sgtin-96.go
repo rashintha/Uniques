@@ -16,8 +16,8 @@ type SGTIN96 struct {
 	UPC                         int64
 }
 
-func sgtin96Decode(epc string) (*SGTIN96, error) {
-	val, success := hexToBigInt(epc)
+func sgtin96Decode(epc *string) (*SGTIN96, error) {
+	val, success := hexToBigInt(*epc)
 	if !success {
 		return &SGTIN96{}, errors.New("failed to convert hex string to big.Int")
 	}
@@ -111,16 +111,21 @@ func sgtin96Decode(epc string) (*SGTIN96, error) {
 		itemRefNo = itemRefNo[1:]
 	}
 
-	upcStr := fmt.Sprintf("%d%s", gs1CompanyPrefix.Int64(), itemRefNo)
-
-	checkDigit, err := calculateUPCCheckDigit(upcStr)
+	itemRefNoInt, err := strconv.Atoi(itemRefNo)
 	if err != nil {
 		return &SGTIN96{}, err
 	}
 
-	upcStr = fmt.Sprintf("%s%d", upcStr, checkDigit)
+	upcStr := fmt.Sprintf("%d%05d", gs1CompanyPrefix.Int64(), itemRefNoInt)
 
-	upc, err := strconv.ParseInt(upcStr, 10, 64)
+	checkDigit, err := calculateUPCCheckDigit(&upcStr)
+	if err != nil {
+		return &SGTIN96{}, err
+	}
+
+	upcStrUpdated := fmt.Sprintf("%s%d", upcStr, checkDigit)
+
+	upc, err := strconv.ParseInt(upcStrUpdated, 10, 64)
 	if err != nil {
 		return &SGTIN96{}, err
 	}
@@ -135,14 +140,14 @@ func sgtin96Decode(epc string) (*SGTIN96, error) {
 	}, nil
 }
 
-func calculateUPCCheckDigit(upc string) (int, error) {
-	if len(upc) != 11 {
-		return 0, fmt.Errorf("UPC must be 11 digits")
+func calculateUPCCheckDigit(upc *string) (int, error) {
+	if len(*upc) != 11 {
+		return 0, fmt.Errorf("UPC must be 11 digits %v", *upc)
 	}
 
 	sum := 0
 	for i := 0; i < 11; i++ {
-		digit, err := strconv.Atoi(string(upc[i]))
+		digit, err := strconv.Atoi(string((*upc)[i]))
 		if err != nil {
 			return 0, err
 		}

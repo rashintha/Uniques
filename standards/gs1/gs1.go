@@ -5,13 +5,13 @@ import (
 	"math/big"
 )
 
-func EPCtoUPC(epc string) (int64, error) {
-	val, success := hexToBigInt(epc)
+func EPCtoUPC(epc *string) (int64, error) {
+	val, success := hexToBigInt(*epc)
 	if !success {
 		return 0, errors.New("failed to convert hex string to big.Int")
 	}
 
-	totalBits := len(epc) * 4
+	totalBits := len(*epc) * 4
 	leadingZeros := totalBits - val.BitLen()
 
 	// Decoding the header
